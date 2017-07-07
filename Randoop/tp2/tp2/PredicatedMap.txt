@@ -1,0 +1,9 @@
+collections.Predicate
+collections.functors.AllPredicate
+collections.functors.InstanceofPredicate
+collections.functors.NotNullPredicate
+collections.functors.TruePredicate
+collections.functors.UniquePredicate
+collections.map.PredicatedMap
+java.util.HashMap
+java.util.Map

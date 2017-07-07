@@ -1,0 +1,9 @@
+collections.Predicate
+collections.functors.NotNullPredicate
+collections.functors.UniquePredicate
+collections.iterators.FilterIterator
+java.util.ConcurrentModificationException
+java.util.Iterator
+java.util.LinkedList
+java.util.ListIterator
+java.util.NoSuchElementException

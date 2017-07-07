@@ -1,0 +1,225 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+<!--
+	Maven identifica los proyectos usando
+	group
+	artifacId
+	version
+-->
+  <groupId>org.autotest</groupId>
+  <artifactId>tp2</artifactId>
+  <packaging>jar</packaging> 
+  <version>1.0-SNAPSHOT</version>
+  <name>tp2</name>
+
+  <url>http://maven.apache.org</url>
+
+
+<!--
+comfiguracion de donde exportas las tests generados 
+-->
+
+<!--
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<targetFolder>src/test/evosuite</targetFolder>
+  </properties>
+-->
+
+  <dependencies>	  
+<!--
+	declaramos la dependencia con junit
+	El scope define que esta dependencia sólo es necesaria al ejecutar tests,
+	no para compilar o ejecutar el proyecto mismo.
+-->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    
+        <!-- JACOCO -->
+    <dependency>
+      <groupId>org.jacoco</groupId>
+      <artifactId>jacoco-maven-plugin</artifactId>
+      <version>0.7.7.201606060606</version>
+    </dependency>
+    <!-- PITEST -->
+    <dependency>
+      <groupId>org.pitest</groupId>
+      <artifactId>pitest-maven</artifactId>
+      <version>1.1.10</version>
+    </dependency>
+    
+<!--
+ mvn test - para evitar errores del tipo org.evosuite.tuntime does not
+ exist (recordar: que los test de EvoSuite tienen una dependencia de la 
+ biblioteca de tiempo de ejecucion de EvoSuite, dada a que trabajan en bytecode
+ y hace mas cosas)
+ 
+ Antes añadimos dependecia a los proyectos de Maven
+ Ahora es una dependecia del proyecto por eso agregamos <dependencies>
+
+-->  
+	<dependency> 
+		<groupId>org.evosuite</groupId> 
+		<artifactId>evosuite-standalone-runtime</artifactId> 
+		<version>1.0.5</version> 
+		<scope>test</scope> 
+	</dependency>
+ 
+  </dependencies>
+
+
+
+<!--
+   esto le dice a Maven es que durante la compilacion
+   queremos hacer uso del plugin EvoSuite
+-->
+ <build> 
+	 <plugins> 
+		 <plugin> 
+			 <groupId>org.evosuite.plugins</groupId> 
+			 <artifactId>evosuite-maven-plugin</artifactId> 
+			 <version>1.0.5</version> 
+		 </plugin> 
+		
+<!--
+	agregado	
+-->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			<version>2.12.4</version>
+			<configuration>
+					<argLine>${surefireArgLine}</argLine>     
+					<includes>
+						 <include>**/Test*.java</include>
+						 <include>**/*Test*.java</include>
+						 <include>**/*Test.java</include>
+						 <include>**/*TestCase.java</include>
+					</includes>
+			</configuration>
+		</plugin>
+	  
+<!--
+	Tenemos que decir donde exportamos als pruebas, ya que cambiamos el export  
+-->
+<!--
+		<plugin> 
+			<groupId>org.codehaus.mojo</groupId> 
+			<artifactId>build-helper-maven-plugin</artifactId> 
+			<version>1.8</version> 
+			<executions> <execution> 
+			<id>add-test-source</id> 
+			<phase>generate-test-sources</phase> 
+			<goals> 
+				<goal>add-test-source</goal> 
+			</goals> 
+			<configuration> 
+				<sources> 
+					<source>${targetFolder}</source> 
+				</sources> 
+			</configuration> 
+			</execution> </executions> 
+		</plugin>
+-->
+
+		<!--
+ configuracion para la salida de jacoco
+-->
+ 	<plugin>
+   		<groupId>org.jacoco</groupId>
+   		<artifactId>jacoco-maven-plugin</artifactId>
+   		<version>0.7.7.201606060606</version>
+   		<executions>
+      			<execution>
+         			<id>pre-unit-test</id>
+         			<goals>
+            				<goal>prepare-agent</goal>
+         			</goals>
+         			<configuration>
+            				<destFile>${project.build.directory}/coverage-reports/jacoco.exec</destFile>
+            				<propertyName>surefireArgLine</propertyName>
+         			</configuration>
+      			</execution>
+      			<execution>
+         			<id>post-unit-test</id>
+         			<phase>test</phase>
+         			<goals>
+            				<goal>report</goal>
+         			</goals>
+         			<configuration>
+            				<dataFile>${project.build.directory}/coverage-reports/jacoco.exec</dataFile>
+            				<outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+         			</configuration>
+      			</execution>
+      			<execution>
+<!--
+         			<id>default-report</id>
+         			<phase>prepare-package</phase>
+         			<goals>
+            				<goal>report</goal>
+         			</goals>
+-->
+      			</execution>
+   		</executions>
+	</plugin>
+<!--
+	 Para asegurarse de que la instrumentación sólo está activa para las pruebas de EvoSuite, 
+	 necesitamos agregar un detector de inicialización para las pruebas de EvoSuite	
+		
+-->
+		<plugin> 
+			<groupId>org.apache.maven.plugins</groupId> 
+			<artifactId>maven-surefire-plugin</artifactId> 
+			<version>2.17</version> 
+			<configuration> 
+				<properties> 
+					<property> 
+						<name>listener</name> 
+						<value>org.evosuite.runtime.InitializingListener</value> 
+					</property> 
+				</properties> 
+			</configuration> 
+		</plugin>
+   
+		<plugin>
+			<groupId>org.pitest</groupId>
+			<artifactId>pitest-maven</artifactId>
+			<version>1.1.10</version>
+				<configuration>
+					<targetClasses>
+						<param>math.genetics.ElitisticListPopulation</param>
+					</targetClasses>
+						<targetTests>
+							<param>*Test*</param>
+						</targetTests>
+					<sourceDataFormats>
+						<sourceDataFormat>CSV</sourceDataFormat>
+					</sourceDataFormats>
+					
+					<extraArgs> -Duse_separate_classloader=false </extraArgs>
+
+				</configuration>
+		</plugin>
+    </plugins>	
+ </build>
+ 
+
+ 
+<!--
+  el complemento de EvoSuite aún no está en Maven Central. Hay q decirle 
+  a Maven que lo debería ver para ello agregamos:
+--> 
+ <pluginRepositories> 
+	 <pluginRepository> 
+		 <id>EvoSuite</id> 
+		 <name>EvoSuite Repository</name> 
+		 <url>http://www.evosuite.org/m2</url> 
+	 </pluginRepository> 
+ </pluginRepositories>
+</project>
